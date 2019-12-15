@@ -1,3 +1,5 @@
+# $ mix run lib/tetris.ex
+
 defmodule Tetris do
   @moduledoc """
   Documentation for Tetris.
@@ -23,51 +25,6 @@ defmodule Tetris do
   @hidden_rows @number_of_stone
   @logical_rows @rows + @hidden_rows
 
-  @shape_list [
-    [
-      [0, 0, 0, 0],
-      [1, 1, 1, 1],
-      [0, 0, 0, 0],
-      [0, 0, 0, 0],
-    ],
-    [
-      [0, 0, 0, 0],
-      [0, 1, 1, 1],
-      [0, 1, 0, 0],
-      [0, 0, 0, 0],
-    ],
-    [
-      [0, 0, 0, 0],
-      [1, 1, 1, 0],
-      [0, 0, 1, 0],
-      [0, 0, 0, 0],
-    ],
-    [
-      [0, 0, 0, 0],
-      [0, 1, 1, 0],
-      [0, 1, 1, 0],
-      [0, 0, 0, 0],
-    ],
-    [
-      [0, 0, 0, 0],
-      [1, 1, 0, 0],
-      [0, 1, 1, 0],
-      [0, 0, 0, 0],
-    ],
-    [
-      [0, 0, 0, 0],
-      [0, 1, 1, 0],
-      [1, 1, 0, 0],
-      [0, 0, 0, 0],
-    ],
-    [
-      [0, 0, 0, 0],
-      [0, 1, 0, 0],
-      [1, 1, 1, 0],
-      [0, 0, 0, 0],
-    ],
-  ]
-
   # var clear_effect: (StonePair) -> Promise<Void> = {_ in Promise()}
   # var calc_score: (StonePair) -> Int = {_ in 0}
   # var score: Int = 0
@@ -85,8 +42,8 @@ defmodule Tetris do
     %{
       # board: Array(repeating: Array(repeating: nil, count: self.cols), count: self.logicalRows),
       board: Enum.map(1..@rows, fn _ -> Enum.map(1..@cols, fn _ -> 0 end) end),
-      # current_block: generateBlock(),
-      # next_block: generateBlock(),
+      current_block: generate_block(),
+      next_block: generate_block(),
       direction: :right,
       chain: for(x <- @initial_length..1, do: {x, 0}),
       # food: {7, 7},
@@ -107,7 +64,7 @@ defmodule Tetris do
   end
 
   def subscribe(_model) do
-    Subscription.interval(100, :tick)
+    Subscription.interval(1000, :tick)
   end
 
   def render(%{chain: chain} = model) do
@@ -115,7 +72,7 @@ defmodule Tetris do
 
     view do
       panel(
-        title: "Tetris Score=#{score}",
+        title: "Tetris Score=#{score}, Model=#{inspect(model)}",
         # height: :fill,
         # height: @rows,
         # padding: 0
@@ -130,37 +87,34 @@ defmodule Tetris do
   end
 
   defp render_board(model) do
-    # %{
-    #   chain: [{head_x, head_y} | tail],
-    #   # food: {food_x, food_y}
-    # } = model
-    # head_cell = canvas_cell(x: head_x, y: head_y, char: "@")
-    # tail_cells = for {x, y} <- tail, do: canvas_cell(x: x, y: y, char: "O")
-    # food_cell = canvas_cell(x: food_x, y: food_y, char: "X")
-    shape = Enum.at(@shape_list, 0)
-    block_cells = for {row, x} <- Enum.with_index(shape), {val, y} <- Enum.with_index(row), do: canvas_cell(x: x, y: y, char: Integer.to_string(val))
+    # shape = Enum.at(@shape_list, 0)
+    # shape = Enum.random(@shape_list)
+    %{ shape: block_shape, x: block_x, y: block_y } = model.current_block
+    block_cells = for {row, x} <- Enum.with_index(block_shape), {val, y} <- Enum.with_index(row), do: canvas_cell(x: x + block_x, y: y + block_y, char: Integer.to_string(val))
+    board_cells = for {row, x} <- Enum.with_index(model.board), {val, y} <- Enum.with_index(row), do: canvas_cell(x: x, y: y, char: Integer.to_string(val))
 
-    cells = [
-      canvas_cell(x: 1, y: 0, char: "X"),
-      canvas_cell(x: 0, y: 1, char: "X"),
-      canvas_cell(x: 1, y: 1, char: "X"),
-      canvas_cell(x: 2, y: 1, char: "X")
-    ]
-
-    # canvas(height: model.height, width: model.width) do
     canvas(height: @cols, width: @rows) do
-      # [food_cell, head_cell | tail_cells]
-      # cells
-      block_cells
+      board_cells ++ block_cells
     end
   end
 
   defp tick(model) do
-    [head | tail] = model.chain
+    # [head | tail] = model.chain
     # next = next_link(head, model.direction)
-    next = head
+    # next = head
 
+    { true, new_block } = move_block_down(model)
     cond do
+    # if not move_block_down():
+    #     freeze()
+    #     clear_lines()
+    #     if check_game_over():
+    #         quit_game()
+    #         return False
+    #     frame_count += 1
+    #     create_current_block()
+    #     create_next_block()
+
       # not next_valid?(next, model) ->
       #   %{model | alive: false}
 
@@ -169,8 +123,9 @@ defmodule Tetris do
       #   %{model | chain: [next, head | tail], food: new_food}
 
       true ->
-        model
+        # model
         # %{model | chain: [next, head | Enum.drop(tail, -1)]}
+        %{model | current_block: new_block}
     end
   end
 
@@ -199,6 +154,50 @@ defmodule Tetris do
   defp next_link({x, y}, :down), do: {x, y + 1}
   defp next_link({x, y}, :left), do: {x - 1, y}
   defp next_link({x, y}, :right), do: {x + 1, y}
+
+  defp generate_block() do
+    # Block.new(0, @cols / 2, 0)
+    # Block.random(@cols / 2, 0)
+    Block.random(0, 0)
+  end
+
+  defp move_block_left(model) do
+    new_block = Block.move_left(model.current_block)
+    # isValid = self.validate(-1, 0)
+    # if isValid:
+    #     self.currentBlock.moveLeft()
+    # return isValid
+    { true, new_block }
+  end
+
+  defp move_block_right(model) do
+    new_block = Block.move_right(model.current_block)
+    # isValid = self.validate(1, 0)
+    # if isValid:
+    #     self.currentBlock.moveRight()
+    # return isValid
+    { true, new_block }
+  end
+
+  defp move_block_down(model) do
+    new_block = Block.move_down(model.current_block)
+    # isValid = self.validate(0, 1)
+    # if isValid:
+    #     self.currentBlock.moveDown()
+    # return isValid
+    { true, new_block }
+  end
+
+  defp rotate_block(model) do
+    new_block = Block.rotate(model.current_block)
+    # rotatedBlock = copy.deepcopy(self.currentBlock)
+    # rotatedBlock.rotate()
+    # isValid = self.validate(0, 0, rotatedBlock)
+    # if isValid:
+    #     self.currentBlock = rotatedBlock
+    # return isValid
+    { true, new_block }
+  end
 end
 
-Ratatouille.run(Tetris, interval: 100)
+Ratatouille.run(Tetris, interval: 1000)
