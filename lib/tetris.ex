@@ -17,11 +17,11 @@ defmodule Tetris do
   @right key(:arrow_right)
   @arrows [@up, @down, @left, @right]
 
-  @initial_length 4
+  # @initial_length 4
 
   @cols 6
   @rows 12
-  @number_of_stone 2
+  @number_of_stone 4
   @hidden_rows @number_of_stone
   @logical_rows @rows + @hidden_rows
 
@@ -45,13 +45,13 @@ defmodule Tetris do
       current_block: generate_block(),
       next_block: generate_block(),
       direction: :right,
-      chain: for(x <- @initial_length..1, do: {x, 0}),
+      # chain: for(x <- @initial_length..1, do: {x, 0}),
       # food: {7, 7},
       alive: true,
-      # height: window.height - 2,
-      # width: window.width - 2
-      height: @rows,
-      width: @cols
+      height: window.height - 2,
+      width: window.width - 2
+      # height: @rows,
+      # width: @cols
     }
   end
 
@@ -67,15 +67,16 @@ defmodule Tetris do
     Subscription.interval(1000, :tick)
   end
 
-  def render(%{chain: chain} = model) do
-    score = length(chain) - 4
+  def render(model) do
+    # score = length(chain) - 4
+    score = 0
 
     view do
       panel(
         title: "Tetris Score=#{score}, Model=#{inspect(model)}",
-        # height: :fill,
+        height: :fill,
         # height: @rows,
-        # padding: 0
+        padding: 0
       ) do
         render_board(model)
       end
@@ -90,10 +91,11 @@ defmodule Tetris do
     # shape = Enum.at(@shape_list, 0)
     # shape = Enum.random(@shape_list)
     %{ shape: block_shape, x: block_x, y: block_y } = model.current_block
-    block_cells = for {row, x} <- Enum.with_index(block_shape), {val, y} <- Enum.with_index(row), do: canvas_cell(x: x + block_x, y: y + block_y, char: Integer.to_string(val))
-    board_cells = for {row, x} <- Enum.with_index(model.board), {val, y} <- Enum.with_index(row), do: canvas_cell(x: x, y: y, char: Integer.to_string(val))
+    block_cells = for {row, y} <- Enum.with_index(block_shape), {val, x} <- Enum.with_index(row), do: canvas_cell(x: x + block_x, y: y + block_y, char: Integer.to_string(val))
+    board_cells = for {row, y} <- Enum.with_index(model.board), {val, x} <- Enum.with_index(row), do: canvas_cell(x: x, y: y, char: Integer.to_string(val))
 
-    canvas(height: @cols, width: @rows) do
+    # canvas(height: @cols, width: @rows) do
+    canvas(height: model.height, width: model.width) do
       board_cells ++ block_cells
     end
   end
@@ -103,7 +105,8 @@ defmodule Tetris do
     # next = next_link(head, model.direction)
     # next = head
 
-    { true, new_block } = move_block_down(model)
+    { is_valid, new_block } = move_block_down(model)
+    # IO.puts is_valid
     cond do
     # if not move_block_down():
     #     freeze()
@@ -122,10 +125,14 @@ defmodule Tetris do
       #   new_food = random_food(model.width - 1, model.height - 1)
       #   %{model | chain: [next, head | tail], food: new_food}
 
-      true ->
-        # model
-        # %{model | chain: [next, head | Enum.drop(tail, -1)]}
+      not is_valid ->
+        %{model | current_block: model.next_block, next_block: generate_block()}
+
+      is_valid ->
         %{model | current_block: new_block}
+
+      true ->
+        model
     end
   end
 
@@ -163,40 +170,51 @@ defmodule Tetris do
 
   defp move_block_left(model) do
     new_block = Block.move_left(model.current_block)
-    # isValid = self.validate(-1, 0)
-    # if isValid:
-    #     self.currentBlock.moveLeft()
-    # return isValid
-    { true, new_block }
+    is_valid = validate(model, -1, 0, new_block)
+    { is_valid, new_block }
   end
 
   defp move_block_right(model) do
     new_block = Block.move_right(model.current_block)
-    # isValid = self.validate(1, 0)
-    # if isValid:
-    #     self.currentBlock.moveRight()
-    # return isValid
-    { true, new_block }
+    is_valid = validate(model, 1, 0, new_block)
+    { is_valid, new_block }
   end
 
   defp move_block_down(model) do
     new_block = Block.move_down(model.current_block)
-    # isValid = self.validate(0, 1)
-    # if isValid:
-    #     self.currentBlock.moveDown()
-    # return isValid
-    { true, new_block }
+    is_valid = validate(model, 0, 1, new_block)
+    { is_valid, new_block }
   end
 
   defp rotate_block(model) do
     new_block = Block.rotate(model.current_block)
-    # rotatedBlock = copy.deepcopy(self.currentBlock)
-    # rotatedBlock.rotate()
-    # isValid = self.validate(0, 0, rotatedBlock)
-    # if isValid:
-    #     self.currentBlock = rotatedBlock
-    # return isValid
-    { true, new_block }
+    is_valid = validate(model, 0, 0, new_block)
+    { is_valid, new_block }
+  end
+
+  defp validate(%{ board: board }, offset_x \\ 0, offset_y \\ 0, block \\ nil) do
+    next_x = block.x + offset_x
+    next_y = block.y + offset_y
+
+    Enum.any?(0..@number_of_stone-1, fn y ->
+      Enum.any?(0..@number_of_stone-1, fn x ->
+        # if not (block.shape && block.shape[y][x]) do
+        #   next
+        # end
+        board_x = x + next_x
+        board_y = y + next_y
+        # row = Enum.at(board, board_y) || []
+        # val = Enum.at(row, board_x) || 0
+        row = Enum.at(board, board_y)
+        val = if row, do: Enum.at(row, board_x), else: nil
+        is_outside_left_wall = board_x < 0
+        is_outside_right_wall = board_x >= @cols
+        is_under_bottom = board_y >= @logical_rows
+        is_outside_board = board_y >= length(board) || board_x >= length(row)
+        is_exists_block = (not is_outside_board) and val > 0
+        not (is_outside_left_wall or is_outside_right_wall or is_under_bottom or is_outside_board or is_exists_block)
+      end)
+    end)
   end
 end
 
