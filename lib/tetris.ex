@@ -186,31 +186,31 @@ defmodule Tetris do
     if is_valid, do: new_block, else: model.current_block
   end
 
-  defp move_block_left(model) do
-    new_block = Block.move_left(model.current_block)
-    is_valid = validate(model, -1, 0, new_block)
+  defp move_block_left(%{ board: board, current_block: current_block }) do
+    new_block = Block.move_left(current_block)
+    is_valid = validate(board, new_block, -1, 0)
     { is_valid, new_block }
   end
 
-  defp move_block_right(model) do
-    new_block = Block.move_right(model.current_block)
-    is_valid = validate(model, 1, 0, new_block)
+  defp move_block_right(%{ board: board, current_block: current_block }) do
+    new_block = Block.move_right(current_block)
+    is_valid = validate(board, new_block, 1, 0)
     { is_valid, new_block }
   end
 
-  defp move_block_down(model) do
-    new_block = Block.move_down(model.current_block)
-    is_valid = validate(model, 0, 1, new_block)
+  defp move_block_down(%{ board: board, current_block: current_block }) do
+    new_block = Block.move_down(current_block)
+    is_valid = validate(board, new_block, 0, 1)
     { is_valid, new_block }
   end
 
-  defp rotate_block(model) do
-    new_block = Block.rotate(model.current_block)
-    is_valid = validate(model, 0, 0, new_block)
+  defp rotate_block(%{ board: board, current_block: current_block }) do
+    new_block = Block.rotate(current_block)
+    is_valid = validate(board, new_block, 0, 0)
     { is_valid, new_block }
   end
 
-  defp validate(%{ board: board }, offset_x \\ 0, offset_y \\ 0, block \\ nil) do
+  defp validate(board, block, offset_x \\ 0, offset_y \\ 0) do
     next_x = block.x + offset_x
     next_y = block.y + offset_y
 
