@@ -17,36 +17,20 @@ defmodule Tetris do
   @right key(:arrow_right)
   @arrows [@up, @down, @left, @right]
 
-  # @initial_length 4
-
   @cols 6
   @rows 12
   @number_of_stone 4
   @hidden_rows @number_of_stone
   @logical_rows @rows + @hidden_rows
 
-  # var clear_effect: (StonePair) -> Promise<Void> = {_ in Promise()}
-  # var calc_score: (StonePair) -> Int = {_ in 0}
-  # var score: Int = 0
-  # var on_game_over: () -> Void = {}
-  # var board: [[Stone?]]
-  # var current_block: Block!
-  # var next_block: Block!
-  # var is_playng: Bool = false
-  # var is_game_over: Bool = false
-  # var is_effecting: Bool = false
-
   def init(%{window: window}) do
     # IO.puts "window.height: #{window.height}"
     # IO.puts "window.width: #{window.width}"
     %{
-      # board: Array(repeating: Array(repeating: nil, count: self.cols), count: self.logicalRows),
-      board: Enum.map(1..@rows, fn _ -> Enum.map(1..@cols, fn _ -> 0 end) end),
+      board: Enum.map(1..@logical_rows, fn _ -> Enum.map(1..@cols, fn _ -> 0 end) end),
       current_block: generate_block(),
       next_block: generate_block(),
       direction: :right,
-      # chain: for(x <- @initial_length..1, do: {x, 0}),
-      # food: {7, 7},
       alive: true,
       height: window.height - 2,
       width: window.width - 2
@@ -115,9 +99,6 @@ defmodule Tetris do
     #     if check_game_over():
     #         quit_game()
     #         return False
-    #     frame_count += 1
-    #     create_current_block()
-    #     create_next_block()
 
       # not next_valid?(next, model) ->
       #   %{model | alive: false}
