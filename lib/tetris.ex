@@ -57,7 +57,8 @@ defmodule Tetris do
 
   def update(model, msg) do
     case msg do
-      {:event, %{key: key}} when key in @arrows -> %{model | direction: next_dir(model.direction, key_to_dir(key))}
+      # {:event, %{key: key}} when key in @arrows -> %{model | direction: next_dir(model.direction, key_to_dir(key))}
+      {:event, %{key: key}} when key in @arrows -> %{model | current_block: move_block(key, model)}
       :tick -> tick(model)
       _ -> model
     end
@@ -166,6 +167,23 @@ defmodule Tetris do
     # Block.new(0, @cols / 2, 0)
     # Block.random(@cols / 2, 0)
     Block.random(0, 0)
+  end
+
+  defp move_block(@left, model) do
+    { is_valid, new_block } = move_block_left(model)
+    if is_valid, do: new_block, else: model.current_block
+  end
+  defp move_block(@right, model) do
+    { is_valid, new_block } = move_block_right(model)
+    if is_valid, do: new_block, else: model.current_block
+  end
+  defp move_block(@down, model) do
+    { is_valid, new_block } = move_block_down(model)
+    if is_valid, do: new_block, else: model.current_block
+  end
+  defp move_block(@up, model) do
+    { is_valid, new_block } = rotate_block(model)
+    if is_valid, do: new_block, else: model.current_block
   end
 
   defp move_block_left(model) do
