@@ -27,6 +27,7 @@ defmodule Tetris do
     # IO.puts "window.height: #{window.height}"
     # IO.puts "window.width: #{window.width}"
     %{
+      debug: true,
       board: Enum.map(1..@logical_rows, fn _ -> Enum.map(1..@cols, fn _ -> 0 end) end),
       current_block: generate_block(),
       next_block: generate_block(),
@@ -57,13 +58,22 @@ defmodule Tetris do
     score = 0
 
     view do
-      panel(
-        title: "Tetris Score=#{score}, Model=#{inspect(model)}",
-        height: :fill,
-        # height: @rows,
-        padding: 0
-      ) do
-        render_board(model)
+      row do
+        column(size: 6) do
+          # label(content: "Black on white", color: :black, background: :white)
+          panel(
+            # title: "Tetris Score=#{score}, Model=#{inspect(model)}",
+            title: "Tetris Score=#{score}",
+            # height: :fill,
+            height: @logical_rows + 4,
+            padding: 0
+            # padding: 2
+          ) do
+            render_board(model)
+          end
+          # if model.debug, do: label(content: "Debug Log:\n#{inspect(model.log)}", wrap: true)
+          if model.debug, do: label(content: "Model:\n#{inspect(model)}", wrap: true)
+        end
       end
     end
   end
