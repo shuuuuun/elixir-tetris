@@ -24,8 +24,6 @@ defmodule Tetris do
   @logical_rows @rows + @hidden_rows
 
   def init(%{window: window}) do
-    # IO.puts "window.height: #{window.height}"
-    # IO.puts "window.width: #{window.width}"
     %{
       debug: true,
       board: Enum.map(1..@logical_rows, fn _ -> Enum.map(1..@cols, fn _ -> 0 end) end),
@@ -42,7 +40,6 @@ defmodule Tetris do
 
   def update(model, msg) do
     case msg do
-      # {:event, %{key: key}} when key in @arrows -> %{model | direction: next_dir(model.direction, key_to_dir(key))}
       {:event, %{key: key}} when key in @arrows -> %{model | current_block: move_block(key, model)}
       :tick -> tick(model)
       _ -> model
@@ -54,7 +51,6 @@ defmodule Tetris do
   end
 
   def render(model) do
-    # score = length(chain) - 4
     score = 0
 
     view do
@@ -97,26 +93,13 @@ defmodule Tetris do
   end
 
   defp tick(model) do
-    # [head | tail] = model.chain
-    # next = next_link(head, model.direction)
-    # next = head
-
     { is_valid, new_block } = move_block_down(model)
-    # IO.puts is_valid
     cond do
     # if not move_block_down():
-    #     freeze()
     #     clear_lines()
     #     if check_game_over():
     #         quit_game()
     #         return False
-
-      # not next_valid?(next, model) ->
-      #   %{model | alive: false}
-
-      # next == model.food ->
-      #   new_food = random_food(model.width - 1, model.height - 1)
-      #   %{model | chain: [next, head | tail], food: new_food}
 
       not is_valid ->
         %{model | board: freeze(model), current_block: model.next_block, next_block: generate_block()}
@@ -128,32 +111,6 @@ defmodule Tetris do
         model
     end
   end
-
-  # defp random_food(max_x, max_y) do
-  #   {Enum.random(0..max_x), Enum.random(0..max_y)}
-  # end
-
-  defp key_to_dir(@up), do: :up
-  defp key_to_dir(@down), do: :down
-  defp key_to_dir(@left), do: :left
-  defp key_to_dir(@right), do: :right
-
-  defp next_valid?({x, y}, _model) when x < 0 or y < 0, do: false
-  defp next_valid?({x, _y}, %{width: width}) when x >= width, do: false
-  defp next_valid?({_x, y}, %{height: height}) when y >= height, do: false
-  defp next_valid?(next, %{chain: chain}), do: next not in chain
-
-  defp next_dir(:up, :down), do: :up
-  defp next_dir(:down, :up), do: :down
-  defp next_dir(:left, :right), do: :left
-  defp next_dir(:right, :left), do: :right
-  defp next_dir(_current, new), do: new
-
-  defp next_link({x, y}, _), do: {x, y}
-  defp next_link({x, y}, :up), do: {x, y - 1}
-  defp next_link({x, y}, :down), do: {x, y + 1}
-  defp next_link({x, y}, :left), do: {x - 1, y}
-  defp next_link({x, y}, :right), do: {x + 1, y}
 
   defp generate_block() do
     # Block.new(0, @cols / 2, 0)
@@ -180,28 +137,24 @@ defmodule Tetris do
 
   defp move_block_left(%{ board: board, current_block: current_block }) do
     new_block = Block.move_left(current_block)
-    # is_valid = validate(board, new_block, -1, 0)
     is_valid = validate(board, new_block)
     { is_valid, new_block }
   end
 
   defp move_block_right(%{ board: board, current_block: current_block }) do
     new_block = Block.move_right(current_block)
-    # is_valid = validate(board, new_block, 1, 0)
     is_valid = validate(board, new_block)
     { is_valid, new_block }
   end
 
   defp move_block_down(%{ board: board, current_block: current_block }) do
     new_block = Block.move_down(current_block)
-    # is_valid = validate(board, new_block, 0, 1)
     is_valid = validate(board, new_block)
     { is_valid, new_block }
   end
 
   defp rotate_block(%{ board: board, current_block: current_block }) do
     new_block = Block.rotate(current_block)
-    # is_valid = validate(board, new_block, 0, 0)
     is_valid = validate(board, new_block)
     { is_valid, new_block }
   end
@@ -210,8 +163,6 @@ defmodule Tetris do
     next_x = block.x + offset_x
     next_y = block.y + offset_y
 
-    # Enum.all?(0..@number_of_stone-1, fn y ->
-    #   Enum.all?(0..@number_of_stone-1, fn x ->
     Enum.with_index(block.shape) |> Enum.all?(fn {row, y} ->
       Enum.with_index(row) |> Enum.all?(fn {val, x} ->
         board_x = x + next_x
@@ -231,13 +182,6 @@ defmodule Tetris do
   end
 
   defp freeze(%{ board: board, current_block: block }) do
-    # for y in range(NUMBER_OF_BLOCK):
-    #     for x in range(NUMBER_OF_BLOCK):
-    #         board_x = x + block.x
-    #         board_y = y + block.y
-    #         if not block.shape[y][x] or board_y < 0:
-    #             continue
-    #         board[board_y][board_x] = block.block_id + 1 if block.shape[y][x] else 0
     # for y <- 0..@number_of_stone-1, x <- 0..@number_of_stone-1 do
     #   board_x = x + block.x
     #   board_y = y + block.y
@@ -256,8 +200,6 @@ defmodule Tetris do
     #   # IO.inspect shape_val
     #   shape_val
     # end
-    # Enum.map(Enum.with_index(board), fn {row, board_y} ->
-    #   Enum.map(Enum.with_index(row), fn {val, board_x} ->
     Enum.with_index(board) |> Enum.map(fn {row, board_y} ->
       Enum.with_index(row) |> Enum.map(fn {val, board_x} ->
         x = board_x - block.x
