@@ -83,15 +83,16 @@ defmodule Tetris do
   end
 
   defp render_board(model) do
-    # shape = Enum.at(@shape_list, 0)
-    # shape = Enum.random(@shape_list)
+    board = freeze(model)
     %{ shape: block_shape, x: block_x, y: block_y } = model.current_block
-    block_cells = for {row, y} <- Enum.with_index(block_shape), {val, x} <- Enum.with_index(row), do: canvas_cell(x: x + block_x, y: y + block_y, char: Integer.to_string(val))
-    board_cells = for {row, y} <- Enum.with_index(model.board), {val, x} <- Enum.with_index(row), do: canvas_cell(x: x, y: y, char: Integer.to_string(val))
+    # block_cells = for {row, y} <- Enum.with_index(block_shape), {val, x} <- Enum.with_index(row), do: canvas_cell(x: x + block_x, y: y + block_y, char: Integer.to_string(val))
+    # board_cells = for {row, y} <- Enum.with_index(model.board), {val, x} <- Enum.with_index(row), do: canvas_cell(x: x, y: y, char: Integer.to_string(val))
+    board_cells = for {row, y} <- Enum.with_index(board), {val, x} <- Enum.with_index(row), do: canvas_cell(x: x, y: y, char: Integer.to_string(val))
 
     # canvas(height: @cols, width: @rows) do
     canvas(height: model.height, width: model.width) do
-      board_cells ++ block_cells
+      # board_cells ++ block_cells
+      board_cells
     end
   end
 
@@ -179,25 +180,29 @@ defmodule Tetris do
 
   defp move_block_left(%{ board: board, current_block: current_block }) do
     new_block = Block.move_left(current_block)
-    is_valid = validate(board, new_block, -1, 0)
+    # is_valid = validate(board, new_block, -1, 0)
+    is_valid = validate(board, new_block)
     { is_valid, new_block }
   end
 
   defp move_block_right(%{ board: board, current_block: current_block }) do
     new_block = Block.move_right(current_block)
-    is_valid = validate(board, new_block, 1, 0)
+    # is_valid = validate(board, new_block, 1, 0)
+    is_valid = validate(board, new_block)
     { is_valid, new_block }
   end
 
   defp move_block_down(%{ board: board, current_block: current_block }) do
     new_block = Block.move_down(current_block)
-    is_valid = validate(board, new_block, 0, 1)
+    # is_valid = validate(board, new_block, 0, 1)
+    is_valid = validate(board, new_block)
     { is_valid, new_block }
   end
 
   defp rotate_block(%{ board: board, current_block: current_block }) do
     new_block = Block.rotate(current_block)
-    is_valid = validate(board, new_block, 0, 0)
+    # is_valid = validate(board, new_block, 0, 0)
+    is_valid = validate(board, new_block)
     { is_valid, new_block }
   end
 
@@ -205,21 +210,22 @@ defmodule Tetris do
     next_x = block.x + offset_x
     next_y = block.y + offset_y
 
-    Enum.any?(0..@number_of_stone-1, fn y ->
-      Enum.any?(0..@number_of_stone-1, fn x ->
+    # Enum.all?(0..@number_of_stone-1, fn y ->
+    #   Enum.all?(0..@number_of_stone-1, fn x ->
+    Enum.with_index(block.shape) |> Enum.all?(fn {row, y} ->
+      Enum.with_index(row) |> Enum.all?(fn {val, x} ->
         board_x = x + next_x
         board_y = y + next_y
-        # row = Enum.at(board, board_y)
-        # val = if row, do: Enum.at(row, board_x), else: nil
-        row = Enum.at(board, board_y, [])
-        val = Enum.at(row, board_x, -1)
-        IO.inspect {board_x, board_y, val}
+        board_row = Enum.at(board, board_y, [])
+        board_val = Enum.at(board_row, board_x, -1)
+        # IO.inspect {board_x, board_y, board_val}
         is_outside_left_wall = board_x < 0
-        is_outside_right_wall = board_x >= @cols
-        is_under_bottom = board_y >= @logical_rows
-        is_outside_board = board_y >= length(board) or board_x >= length(row)
-        is_exists_block = val > 0
-        not (is_outside_left_wall or is_outside_right_wall or is_under_bottom or is_outside_board or is_exists_block)
+        is_outside_right_wall = board_x > @cols
+        is_under_bottom = board_y > @logical_rows
+        is_outside_board = board_y >= length(board) or board_x >= length(board_row)
+        is_exists_block = board_val > 0
+        # IO.inspect {is_outside_left_wall, is_outside_right_wall, is_under_bottom, is_outside_board, is_exists_block}
+        val <= 0 or not (is_outside_left_wall or is_outside_right_wall or is_under_bottom or is_outside_board or is_exists_block)
       end)
     end)
   end
@@ -250,11 +256,18 @@ defmodule Tetris do
     #   # IO.inspect shape_val
     #   shape_val
     # end
-    Enum.map(Enum.with_index(board), fn {row, board_y} ->
-      Enum.map(Enum.with_index(row), fn {val, board_x} ->
+    # Enum.map(Enum.with_index(board), fn {row, board_y} ->
+    #   Enum.map(Enum.with_index(row), fn {val, board_x} ->
+    Enum.with_index(board) |> Enum.map(fn {row, board_y} ->
+      Enum.with_index(row) |> Enum.map(fn {val, board_x} ->
         x = board_x - block.x
         y = board_y - block.y
-        block.shape |> Enum.at(y, []) |> Enum.at(x, 0)
+        shape_val = block.shape |> Enum.at(y, []) |> Enum.at(x, -1)
+        cond do
+          x < 0 or y < 0 -> val
+          shape_val > 0 -> shape_val
+          true -> val
+        end
       end)
     end)
   end
