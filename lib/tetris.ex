@@ -108,7 +108,7 @@ defmodule Tetris do
       #   %{model | chain: [next, head | tail], food: new_food}
 
       not is_valid ->
-        %{model | current_block: model.next_block, next_block: generate_block()}
+        %{model | board: freeze(model), current_block: model.next_block, next_block: generate_block()}
 
       is_valid ->
         %{model | current_block: new_block}
@@ -197,21 +197,54 @@ defmodule Tetris do
 
     Enum.any?(0..@number_of_stone-1, fn y ->
       Enum.any?(0..@number_of_stone-1, fn x ->
-        # if not (block.shape && block.shape[y][x]) do
-        #   next
-        # end
         board_x = x + next_x
         board_y = y + next_y
-        # row = Enum.at(board, board_y) || []
-        # val = Enum.at(row, board_x) || 0
-        row = Enum.at(board, board_y)
-        val = if row, do: Enum.at(row, board_x), else: nil
+        # row = Enum.at(board, board_y)
+        # val = if row, do: Enum.at(row, board_x), else: nil
+        row = Enum.at(board, board_y, [])
+        val = Enum.at(row, board_x, -1)
+        IO.inspect {board_x, board_y, val}
         is_outside_left_wall = board_x < 0
         is_outside_right_wall = board_x >= @cols
         is_under_bottom = board_y >= @logical_rows
-        is_outside_board = board_y >= length(board) || board_x >= length(row)
-        is_exists_block = (not is_outside_board) and val > 0
+        is_outside_board = board_y >= length(board) or board_x >= length(row)
+        is_exists_block = val > 0
         not (is_outside_left_wall or is_outside_right_wall or is_under_bottom or is_outside_board or is_exists_block)
+      end)
+    end)
+  end
+
+  defp freeze(%{ board: board, current_block: block }) do
+    # for y in range(NUMBER_OF_BLOCK):
+    #     for x in range(NUMBER_OF_BLOCK):
+    #         board_x = x + block.x
+    #         board_y = y + block.y
+    #         if not block.shape[y][x] or board_y < 0:
+    #             continue
+    #         board[board_y][board_x] = block.block_id + 1 if block.shape[y][x] else 0
+    # for y <- 0..@number_of_stone-1, x <- 0..@number_of_stone-1 do
+    #   board_x = x + block.x
+    #   board_y = y + block.y
+    #   # val = if block.shape[y][x], do: block.block_id + 1, else: 0
+    #   shape_val = block.shape |> Enum.at(y, []) |> Enum.at(x)
+    #   # new_val = if shape_val, do: block.block_id + 1, else: 0
+    #   new_val = if shape_val, do: 1, else: 0
+    #   # List.update_at(board, board_y, fn row -> List.insert_at(row, board_x, new_val) end)
+    #   board = List.update_at(board, board_y, fn row -> List.replace_at(row, board_x, new_val) end)
+    # end
+    # board
+    # for {row, board_y} <- Enum.with_index(board), {val, board_x} <- Enum.with_index(row) do
+    #   x = board_x - block.x
+    #   y = board_y - block.y
+    #   shape_val = block.shape |> Enum.at(y, []) |> Enum.at(x, 0)
+    #   # IO.inspect shape_val
+    #   shape_val
+    # end
+    Enum.map(Enum.with_index(board), fn {row, board_y} ->
+      Enum.map(Enum.with_index(row), fn {val, board_x} ->
+        x = board_x - block.x
+        y = board_y - block.y
+        block.shape |> Enum.at(y, []) |> Enum.at(x, 0)
       end)
     end)
   end
