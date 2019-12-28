@@ -55,9 +55,8 @@ defmodule Tetris do
     view do
       row do
         column(size: 6) do
-          # label(content: "Black on white", color: :black, background: :white)
           panel(
-            title: "Tetris Score=#{model.score}",
+            title: "Elixir Tetris",
             # height: :fill,
             height: @logical_rows + 4,
             padding: 0
@@ -65,6 +64,7 @@ defmodule Tetris do
           ) do
             render_board(model)
           end
+          label(content: "Score: #{model.score}", wrap: true)
           # if model.debug, do: label(content: "Debug Log:\n#{inspect(model.log)}", wrap: true)
           if model.debug, do: label(content: "Model:\n#{inspect(model)}", wrap: true)
         end
@@ -85,7 +85,9 @@ defmodule Tetris do
     # board_cells = for {row, y} <- Enum.with_index(board), {val, x} <- Enum.with_index(row), do: canvas_cell(x: x, y: y, char: Integer.to_string(val))
     board_cells = for {row, y} <- Enum.with_index(board), {val, x} <- Enum.with_index(row) do
       color = if val > 0, do: :white, else: :black
-      canvas_cell(x: x, y: y, char: "■", color: color)
+      # canvas_cell(x: x, y: y, char: "■", color: color)
+      # canvas_cell(x: x, y: y, char: "■", color: color, background: color)
+      canvas_cell(x: x, y: y, char: "_", color: color, background: color)
     end
 
     # canvas(height: @cols, width: @rows) do
