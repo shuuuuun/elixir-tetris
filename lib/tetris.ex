@@ -85,22 +85,23 @@ defmodule Tetris do
     # canvas(height: model.height, width: model.width) do
     #   board_cells
     # end
-    row do
-      column(size: 1) do
+    # row do
+    #   column(size: 1) do
         panel(height: @rows + 2, padding: 0) do
           table do
             for row <- board do
               table_row do
                 for val <- row do
                   color = if val > 0, do: :white, else: :black
-                  table_cell(content: "_", color: color, background: color)
+                  # table_cell(content: "_", color: color, background: color)
+                  table_cell(content: "", color: color, background: color)
                 end
               end
             end
           end
         end
-      end
-    end
+    #   end
+    # end
   end
 
   defp tick(model) do
