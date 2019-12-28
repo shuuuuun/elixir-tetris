@@ -77,12 +77,13 @@ defmodule Block do
   end
 
   def rotate(block) do
-    # newShape = []
-    # for y in range(NUMBER_OF_BLOCK):
-    #     newShape.append([])
-    #     for x in range(NUMBER_OF_BLOCK):
-    #         newShape[y].append(self.shape[NUMBER_OF_BLOCK - 1 - x][y])
-    # self.shape = newShape
-    %Block{ block | shape: [] }
+    shape_size = Enum.count(block.shape)
+    new_shape =
+      Enum.with_index(block.shape) |> Enum.map(fn {row, y} ->
+        Enum.with_index(row) |> Enum.map(fn {val, x} ->
+          block.shape |> Enum.at(shape_size - 1 - x, []) |> Enum.at(y, 0)
+        end)
+      end)
+    %Block{ block | shape: new_shape }
   end
 end
