@@ -80,10 +80,13 @@ defmodule Tetris do
 
   defp render_board(model) do
     %{ board: board } = freeze(model)
-    %{ shape: block_shape, x: block_x, y: block_y } = model.current_block
+    # %{ shape: block_shape, x: block_x, y: block_y } = model.current_block
     # block_cells = for {row, y} <- Enum.with_index(block_shape), {val, x} <- Enum.with_index(row), do: canvas_cell(x: x + block_x, y: y + block_y, char: Integer.to_string(val))
-    # board_cells = for {row, y} <- Enum.with_index(model.board), {val, x} <- Enum.with_index(row), do: canvas_cell(x: x, y: y, char: Integer.to_string(val))
-    board_cells = for {row, y} <- Enum.with_index(board), {val, x} <- Enum.with_index(row), do: canvas_cell(x: x, y: y, char: Integer.to_string(val))
+    # board_cells = for {row, y} <- Enum.with_index(board), {val, x} <- Enum.with_index(row), do: canvas_cell(x: x, y: y, char: Integer.to_string(val))
+    board_cells = for {row, y} <- Enum.with_index(board), {val, x} <- Enum.with_index(row) do
+      color = if val > 0, do: :white, else: :black
+      canvas_cell(x: x, y: y, char: "■", color: color)
+    end
 
     # canvas(height: @cols, width: @rows) do
     canvas(height: model.height, width: model.width) do
@@ -96,8 +99,6 @@ defmodule Tetris do
     { is_valid, new_block } = move_block_down(model)
     cond do
       not is_valid ->
-        # %{model | board: (freeze(model) |> clear_lines()).board, current_block: model.next_block, next_block: generate_block()}
-        # Map.merge()
         %{model |> freeze() |> clear_lines() | current_block: model.next_block, next_block: generate_block()}
 
       is_valid ->
