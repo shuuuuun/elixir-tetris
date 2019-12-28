@@ -79,7 +79,7 @@ defmodule Tetris do
   end
 
   defp render_board(model) do
-    board = freeze(model)
+    %{ board: board } = freeze(model)
     %{ shape: block_shape, x: block_x, y: block_y } = model.current_block
     # block_cells = for {row, y} <- Enum.with_index(block_shape), {val, x} <- Enum.with_index(row), do: canvas_cell(x: x + block_x, y: y + block_y, char: Integer.to_string(val))
     # board_cells = for {row, y} <- Enum.with_index(model.board), {val, x} <- Enum.with_index(row), do: canvas_cell(x: x, y: y, char: Integer.to_string(val))
@@ -95,14 +95,10 @@ defmodule Tetris do
   defp tick(model) do
     { is_valid, new_block } = move_block_down(model)
     cond do
-    # if not move_block_down():
-    #     clear_lines()
-    #     if check_game_over():
-    #         quit_game()
-    #         return False
-
       not is_valid ->
-        %{model | board: freeze(model), current_block: model.next_block, next_block: generate_block()}
+        # %{model | board: (freeze(model) |> clear_lines()).board, current_block: model.next_block, next_block: generate_block()}
+        # Map.merge()
+        %{model |> freeze() |> clear_lines() | current_block: model.next_block, next_block: generate_block()}
 
       is_valid ->
         %{model | current_block: new_block}
@@ -181,7 +177,7 @@ defmodule Tetris do
     end)
   end
 
-  defp freeze(%{ board: board, current_block: block }) do
+  defp freeze(%{ board: board, current_block: block } = model) do
     # for y <- 0..@number_of_stone-1, x <- 0..@number_of_stone-1 do
     #   board_x = x + block.x
     #   board_y = y + block.y
@@ -200,18 +196,44 @@ defmodule Tetris do
     #   # IO.inspect shape_val
     #   shape_val
     # end
-    Enum.with_index(board) |> Enum.map(fn {row, board_y} ->
-      Enum.with_index(row) |> Enum.map(fn {val, board_x} ->
-        x = board_x - block.x
-        y = board_y - block.y
-        shape_val = block.shape |> Enum.at(y, []) |> Enum.at(x, -1)
-        cond do
-          x < 0 or y < 0 -> val
-          shape_val > 0 -> shape_val
-          true -> val
-        end
+    new_board =
+      Enum.with_index(board) |> Enum.map(fn {row, board_y} ->
+        Enum.with_index(row) |> Enum.map(fn {val, board_x} ->
+          x = board_x - block.x
+          y = board_y - block.y
+          shape_val = block.shape |> Enum.at(y, []) |> Enum.at(x, -1)
+          cond do
+            x < 0 or y < 0 -> val
+            shape_val > 0 -> shape_val
+            true -> val
+          end
+        end)
       end)
-    end)
+    %{ model | board: new_board }
+  end
+
+  defp clear_lines(%{ board: board } = model) do
+    # TODO: 1行消去で速度を上げる
+    # TODO: calc score
+
+    # new_board =
+    #   Enum.map(fn row ->
+    #     is_clear = Enum.all?(row, fn val -> val > 0 end)
+    #     if is_clear, do: nil, else: row
+    #   end)
+    cleared_board =
+      Enum.reject(board, fn row ->
+        Enum.all?(row, fn val -> val > 0 end)
+      end)
+    # clear_count = Enum.count(board) - Enum.count(cleared_board)
+    # empty_row = Enum.map(1..@cols, fn _ -> 0 end)
+    empty_board = Enum.map(1..@logical_rows, fn _ -> Enum.map(1..@cols, fn _ -> 0 end) end)
+    # new_board = Enum.map(Enum.count(cleared_board)..@logical_rows, fn _ -> empty_row end) ++ cleared_board
+    # new_board = Enum.map(0..@logical_rows-1, fn i -> Enum.at(cleared_board, i, empty_row) end)
+    # new_board = Enum.take(empty_board ++ cleared_board, @logical_rows)
+    new_board = Enum.slice(empty_board ++ cleared_board, -@logical_rows..-1)
+
+    %{ model | board: new_board }
   end
 end
 
