@@ -29,8 +29,8 @@ defmodule Tetris do
       board: Enum.map(1..@logical_rows, fn _ -> Enum.map(1..@cols, fn _ -> 0 end) end),
       current_block: generate_block(),
       next_block: generate_block(),
-      direction: :right,
       alive: true,
+      score: 0,
       height: window.height - 2,
       width: window.width - 2
       # height: @rows,
@@ -52,15 +52,12 @@ defmodule Tetris do
   end
 
   def render(model) do
-    score = 0
-
     view do
       row do
         column(size: 6) do
           # label(content: "Black on white", color: :black, background: :white)
           panel(
-            # title: "Tetris Score=#{score}, Model=#{inspect(model)}",
-            title: "Tetris Score=#{score}",
+            title: "Tetris Score=#{model.score}",
             # height: :fill,
             height: @logical_rows + 4,
             padding: 0
@@ -216,28 +213,19 @@ defmodule Tetris do
     %{ model | board: new_board }
   end
 
-  defp clear_lines(%{ board: board } = model) do
+  defp clear_lines(%{ board: board, score: score } = model) do
     # TODO: 1行消去で速度を上げる
-    # TODO: calc score
 
-    # new_board =
-    #   Enum.map(fn row ->
-    #     is_clear = Enum.all?(row, fn val -> val > 0 end)
-    #     if is_clear, do: nil, else: row
-    #   end)
     cleared_board =
       Enum.reject(board, fn row ->
         Enum.all?(row, fn val -> val > 0 end)
       end)
-    # clear_count = Enum.count(board) - Enum.count(cleared_board)
-    # empty_row = Enum.map(1..@cols, fn _ -> 0 end)
+    clear_count = Enum.count(board) - Enum.count(cleared_board)
     empty_board = Enum.map(1..@logical_rows, fn _ -> Enum.map(1..@cols, fn _ -> 0 end) end)
-    # new_board = Enum.map(Enum.count(cleared_board)..@logical_rows, fn _ -> empty_row end) ++ cleared_board
-    # new_board = Enum.map(0..@logical_rows-1, fn i -> Enum.at(cleared_board, i, empty_row) end)
-    # new_board = Enum.take(empty_board ++ cleared_board, @logical_rows)
     new_board = Enum.slice(empty_board ++ cleared_board, -@logical_rows..-1)
+    new_score = score + clear_count
 
-    %{ model | board: new_board }
+    %{ model | board: new_board, score: new_score }
   end
 
   defp check_game_over(%{ current_block: block } = model) do
