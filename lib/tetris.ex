@@ -102,7 +102,7 @@ defmodule Tetris do
     { is_valid, new_block } = move_block_down(model)
     cond do
       not is_valid ->
-        %{model |> freeze() |> clear_lines() | current_block: model.next_block, next_block: generate_block()}
+        %{model |> freeze() |> clear_lines() |> check_game_over() | current_block: model.next_block, next_block: generate_block()}
 
       is_valid ->
         %{model | current_block: new_block}
@@ -238,6 +238,18 @@ defmodule Tetris do
     new_board = Enum.slice(empty_board ++ cleared_board, -@logical_rows..-1)
 
     %{ model | board: new_board }
+  end
+
+  defp check_game_over(%{ current_block: block } = model) do
+    # ブロックの全てが画面外ならゲームオーバー
+    is_game_over =
+      Enum.with_index(block.shape) |> Enum.all?(fn {row, y} ->
+        Enum.with_index(row) |> Enum.all?(fn {val, _x} ->
+          board_y = y + block.y
+          val == 0 or board_y < @hidden_rows
+        end)
+      end)
+    %{ model | alive: !is_game_over }
   end
 end
 
