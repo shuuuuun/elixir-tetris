@@ -7,6 +7,7 @@ defmodule Tetris do
   @behaviour Ratatouille.App
 
   alias Ratatouille.Runtime.Subscription
+  alias Tetris.Block
 
   import Ratatouille.Constants, only: [key: 1]
   import Ratatouille.View

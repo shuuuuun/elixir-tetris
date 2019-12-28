@@ -1,4 +1,6 @@
-defmodule Block do
+defmodule Tetris.Block do
+  alias Tetris.Block
+
   @shape_list [
     [
       [0, 0, 0, 0],
