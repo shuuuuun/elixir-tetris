@@ -39,6 +39,7 @@ defmodule Tetris do
   end
 
   def update(model, msg) do
+    # TODO: key押してるときtickが進まない
     case msg do
       {:event, %{key: key}} when key in @arrows -> %{model | current_block: move_block(key, model)}
       :tick -> tick(model)
@@ -79,7 +80,9 @@ defmodule Tetris do
   end
 
   defp render_board(model) do
+    # TODO: もうちょい見やすくしたい
     %{ board: board } = freeze(model)
+    board = Enum.drop(board, @hidden_rows)
     # %{ shape: block_shape, x: block_x, y: block_y } = model.current_block
     # block_cells = for {row, y} <- Enum.with_index(block_shape), {val, x} <- Enum.with_index(row), do: canvas_cell(x: x + block_x, y: y + block_y, char: Integer.to_string(val))
     # board_cells = for {row, y} <- Enum.with_index(board), {val, x} <- Enum.with_index(row), do: canvas_cell(x: x, y: y, char: Integer.to_string(val))
