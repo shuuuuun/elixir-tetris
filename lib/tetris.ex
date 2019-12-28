@@ -26,7 +26,7 @@ defmodule Tetris do
 
   def init(%{window: window}) do
     %{
-      debug: true,
+      debug: Mix.env() != :prod,
       board: Enum.map(1..@logical_rows, fn _ -> Enum.map(1..@cols, fn _ -> 0 end) end),
       current_block: generate_block(),
       next_block: generate_block(),
@@ -54,21 +54,14 @@ defmodule Tetris do
 
   def render(model) do
     view do
-      row do
-        column(size: 6) do
-          panel(
-            title: "Elixir Tetris",
-            # height: :fill,
-            height: @logical_rows + 4,
-            padding: 0
-            # padding: 2
-          ) do
-            render_board(model)
-          end
-          label(content: "Score: #{model.score}", wrap: true)
-          # if model.debug, do: label(content: "Debug Log:\n#{inspect(model.log)}", wrap: true)
-          if model.debug, do: label(content: "Model:\n#{inspect(model)}", wrap: true)
-        end
+      panel(
+        title: "Elixir Tetris",
+        height: :fill,
+      ) do
+        render_board(model)
+        label(content: "Score: #{model.score}", wrap: true)
+        # if model.debug, do: label(content: "Debug Log:\n#{inspect(model.log)}", wrap: true)
+        if model.debug, do: label(content: "Model:\n#{inspect(model)}", wrap: true)
       end
     end
   end
@@ -81,20 +74,32 @@ defmodule Tetris do
     # TODO: もうちょい見やすくしたい
     %{ board: board } = freeze(model)
     board = Enum.drop(board, @hidden_rows)
-    # %{ shape: block_shape, x: block_x, y: block_y } = model.current_block
-    # block_cells = for {row, y} <- Enum.with_index(block_shape), {val, x} <- Enum.with_index(row), do: canvas_cell(x: x + block_x, y: y + block_y, char: Integer.to_string(val))
-    # board_cells = for {row, y} <- Enum.with_index(board), {val, x} <- Enum.with_index(row), do: canvas_cell(x: x, y: y, char: Integer.to_string(val))
-    board_cells = for {row, y} <- Enum.with_index(board), {val, x} <- Enum.with_index(row) do
-      color = if val > 0, do: :white, else: :black
-      # canvas_cell(x: x, y: y, char: "■", color: color)
-      # canvas_cell(x: x, y: y, char: "■", color: color, background: color)
-      canvas_cell(x: x, y: y, char: "_", color: color, background: color)
-    end
+    # board_cells = for {row, y} <- Enum.with_index(board), {val, x} <- Enum.with_index(row) do
+    #   color = if val > 0, do: :white, else: :black
+    #   # canvas_cell(x: x, y: y, char: "■", color: color)
+    #   # canvas_cell(x: x, y: y, char: "■", color: color, background: color)
+    #   canvas_cell(x: x, y: y, char: "_", color: color, background: color)
+    # end
 
     # canvas(height: @cols, width: @rows) do
-    canvas(height: model.height, width: model.width) do
-      # board_cells ++ block_cells
-      board_cells
+    # canvas(height: model.height, width: model.width) do
+    #   board_cells
+    # end
+    row do
+      column(size: 1) do
+        panel(height: @rows + 2, padding: 0) do
+          table do
+            for row <- board do
+              table_row do
+                for val <- row do
+                  color = if val > 0, do: :white, else: :black
+                  table_cell(content: "_", color: color, background: color)
+                end
+              end
+            end
+          end
+        end
+      end
     end
   end
 
@@ -113,7 +118,6 @@ defmodule Tetris do
   end
 
   defp generate_block() do
-    # Block.new(0, @cols / 2, 0)
     # Block.random(@cols / 2, 0)
     Block.random(0, 0)
   end
