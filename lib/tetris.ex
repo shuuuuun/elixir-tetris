@@ -12,6 +12,7 @@ defmodule Tetris do
   import Ratatouille.Constants, only: [key: 1]
   import Ratatouille.View
 
+  @space key(:space)
   @up key(:arrow_up)
   @down key(:arrow_down)
   @left key(:arrow_left)
@@ -24,16 +25,16 @@ defmodule Tetris do
   @hidden_rows @number_of_stone
   @logical_rows @rows + @hidden_rows
 
-  def init(%{window: window}) do
+  def init(_context) do
     %{
       debug: Mix.env() != :prod,
-      board: Enum.map(1..@logical_rows, fn _ -> Enum.map(1..@cols, fn _ -> 0 end) end),
+      board: empty_board(),
       current_block: generate_block(),
       next_block: generate_block(),
       alive: true,
       score: 0,
-      height: window.height - 2,
-      width: window.width - 2
+      # height: window.height - 2,
+      # width: window.width - 2
       # height: @rows,
       # width: @cols
     }
@@ -43,6 +44,7 @@ defmodule Tetris do
     # TODO: key押してるときtickが進まない
     case msg do
       {:event, %{key: key}} when key in @arrows -> %{model | current_block: move_block(key, model)}
+      {:event, %{key: key}} when key == @space -> init(model)
       :tick -> tick(model)
       _ -> model
     end
@@ -226,8 +228,7 @@ defmodule Tetris do
         Enum.all?(row, fn val -> val > 0 end)
       end)
     clear_count = Enum.count(board) - Enum.count(cleared_board)
-    empty_board = Enum.map(1..@logical_rows, fn _ -> Enum.map(1..@cols, fn _ -> 0 end) end)
-    new_board = Enum.slice(empty_board ++ cleared_board, -@logical_rows..-1)
+    new_board = Enum.slice(empty_board() ++ cleared_board, -@logical_rows..-1)
     new_score = score + clear_count
 
     %{ model | board: new_board, score: new_score }
@@ -243,6 +244,10 @@ defmodule Tetris do
         end)
       end)
     %{ model | alive: !is_game_over }
+  end
+
+  defp empty_board() do
+    Enum.map(1..@logical_rows, fn _ -> Enum.map(1..@cols, fn _ -> 0 end) end)
   end
 end
 
