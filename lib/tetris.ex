@@ -1,5 +1,8 @@
 # $ mix run lib/tetris.ex
 
+# TODO: next表示
+# TODO: hold機能
+
 defmodule Tetris do
   @moduledoc """
   Documentation for Tetris.
@@ -11,6 +14,8 @@ defmodule Tetris do
 
   import Ratatouille.Constants, only: [key: 1]
   import Ratatouille.View
+
+  @debug Mix.env() != :prod
 
   @space key(:space)
   @up key(:arrow_up)
@@ -27,7 +32,6 @@ defmodule Tetris do
 
   def init(_context) do
     %{
-      debug: Mix.env() != :prod,
       board: empty_board(),
       current_block: generate_block(),
       next_block: generate_block(),
@@ -62,8 +66,8 @@ defmodule Tetris do
       ) do
         render_board(model)
         label(content: "Score: #{model.score}", wrap: true)
-        # if model.debug, do: label(content: "Debug Log:\n#{inspect(model.log)}", wrap: true)
-        if model.debug, do: label(content: "Model:\n#{inspect(model)}", wrap: true)
+        # if @debug, do: label(content: "Debug Log:\n#{inspect(model.log)}", wrap: true)
+        if @debug, do: label(content: "Model:\n#{inspect(model)}", wrap: true)
       end
     end
   end
