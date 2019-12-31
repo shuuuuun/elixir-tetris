@@ -1,12 +1,8 @@
-# $ mix run lib/tetris.ex
-
+# TODO: refactor. もっとElixirっぽく書く.
 # TODO: next表示
 # TODO: hold機能
 
 defmodule Tetris do
-  @moduledoc """
-  Documentation for Tetris.
-  """
   @behaviour Ratatouille.App
 
   alias Ratatouille.Runtime.Subscription
@@ -39,8 +35,6 @@ defmodule Tetris do
       score: 0,
       # height: window.height - 2,
       # width: window.width - 2
-      # height: @rows,
-      # width: @cols
     }
   end
 
@@ -73,7 +67,7 @@ defmodule Tetris do
     view do
       panel(
         title: "Elixir Tetris",
-        height: :fill,
+        height: :fill
       ) do
         render_board(model)
         label(content: "Score: #{model.score}", wrap: true)
@@ -88,7 +82,6 @@ defmodule Tetris do
   end
 
   defp render_board(model) do
-    # TODO: もうちょい見やすくしたい
     %{ board: board } = freeze(model)
     board = Enum.drop(board, @hidden_rows)
     # board_cells = for {row, y} <- Enum.with_index(board), {val, x} <- Enum.with_index(row) do
@@ -98,24 +91,23 @@ defmodule Tetris do
     #   canvas_cell(x: x, y: y, char: "_", color: color, background: color)
     # end
 
-    # canvas(height: @cols, width: @rows) do
     # canvas(height: model.height, width: model.width) do
     #   board_cells
     # end
-      table do
-        for row <- board do
-          table_row do
-            for val <- row do
-              # colors: default, black, red, green, yellow, blue, magenta, cyan, white
-              # color = if val > 0, do: :white, else: :black
-              # color = if val > 0, do: :black, else: :white
-              color = if val > 0, do: :blue, else: :white
-              # table_cell(content: "_", color: color, background: color)
-              table_cell(content: "", background: color)
-            end
+    table do
+      for row <- board do
+        table_row do
+          for val <- row do
+            # colors: default, black, red, green, yellow, blue, magenta, cyan, white
+            # color = if val > 0, do: :white, else: :black
+            # color = if val > 0, do: :black, else: :white
+            color = if val > 0, do: :blue, else: :white
+            # table_cell(content: "_", color: color, background: color)
+            table_cell(content: "", background: color)
           end
         end
       end
+    end
   end
 
   defp tick(model) do
@@ -188,37 +180,17 @@ defmodule Tetris do
         board_y = y + next_y
         board_row = Enum.at(board, board_y, [])
         board_val = Enum.at(board_row, board_x, -1)
-        # IO.inspect {board_x, board_y, board_val}
         is_outside_left_wall = board_x < 0
         is_outside_right_wall = board_x > @cols
         is_under_bottom = board_y > @logical_rows
         is_outside_board = board_y >= length(board) or board_x >= length(board_row)
         is_exists_block = board_val > 0
-        # IO.inspect {is_outside_left_wall, is_outside_right_wall, is_under_bottom, is_outside_board, is_exists_block}
         val <= 0 or not (is_outside_left_wall or is_outside_right_wall or is_under_bottom or is_outside_board or is_exists_block)
       end)
     end)
   end
 
   defp freeze(%{ board: board, current_block: block } = model) do
-    # for y <- 0..@number_of_stone-1, x <- 0..@number_of_stone-1 do
-    #   board_x = x + block.x
-    #   board_y = y + block.y
-    #   # val = if block.shape[y][x], do: block.block_id + 1, else: 0
-    #   shape_val = block.shape |> Enum.at(y, []) |> Enum.at(x)
-    #   # new_val = if shape_val, do: block.block_id + 1, else: 0
-    #   new_val = if shape_val, do: 1, else: 0
-    #   # List.update_at(board, board_y, fn row -> List.insert_at(row, board_x, new_val) end)
-    #   board = List.update_at(board, board_y, fn row -> List.replace_at(row, board_x, new_val) end)
-    # end
-    # board
-    # for {row, board_y} <- Enum.with_index(board), {val, board_x} <- Enum.with_index(row) do
-    #   x = board_x - block.x
-    #   y = board_y - block.y
-    #   shape_val = block.shape |> Enum.at(y, []) |> Enum.at(x, 0)
-    #   # IO.inspect shape_val
-    #   shape_val
-    # end
     new_board =
       Enum.with_index(board) |> Enum.map(fn {row, board_y} ->
         Enum.with_index(row) |> Enum.map(fn {val, board_x} ->
