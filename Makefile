@@ -19,6 +19,18 @@ test:
 console:
 	iex -S mix
 
-# .PHONY: iex
-# iex:
-# 	docker run -it --rm -v ${PWD}:/app -w /app elixir
+.PHONY: docker-iex
+docker-iex:
+	docker run -it --rm -v ${PWD}:/app --workdir /app elixir:slim
+
+# .PHONY: docker-console
+# docker-console:
+# 	docker run -it --rm -v ${PWD}:/app --workdir /app elixir:slim iex -S mix
+
+# .PHONY: docker-get
+# docker-get:
+# 	docker run -it --rm -v ${PWD}:/app --workdir /app elixir:slim mix deps.get
+
+# .PHONY: docker-run
+# docker-run:
+# 	docker run -it --rm -v ${PWD}:/app --workdir /app --env MIX_ENV=prod elixir:slim mix run lib/tetris.exs
