@@ -2,6 +2,8 @@
 
 This is study project.
 
+<img width="374" alt="スクリーンショット 2019-12-31 17 25 29" src="https://user-images.githubusercontent.com/7542105/71615070-a5163f00-2bf2-11ea-9e88-470f1350cb25.png">
+
 ## Usage
 
 0. Requires [Elixir](https://elixir-lang.org) to be installed.
@@ -19,6 +21,7 @@ This is study project.
     $ make run
     # equivalent to `MIX_ENV=prod mix run lib/tetris.exs`.
     ```
+
 
 ## Environment
 ```shell
