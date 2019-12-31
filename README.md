@@ -9,10 +9,10 @@ This is study project.
 1. Clone this repository.
 
 2. Run this comamnd on your shell.
-```shell
-$ make run
-# equivalent to `MIX_ENV=prod mix run lib/tetris.exs`.
-```
+    ```shell
+    $ make run
+    # equivalent to `MIX_ENV=prod mix run lib/tetris.exs`.
+    ```
 
 ## Environment
 ```shell
