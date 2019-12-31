@@ -2,7 +2,6 @@
 
 # TODO: next表示
 # TODO: hold機能
-# TODO: 2回runする問題
 
 defmodule Tetris do
   @moduledoc """
