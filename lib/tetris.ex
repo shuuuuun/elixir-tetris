@@ -2,6 +2,7 @@
 
 # TODO: next表示
 # TODO: hold機能
+# TODO: 2回runする問題
 
 defmodule Tetris do
   @moduledoc """
@@ -45,8 +46,16 @@ defmodule Tetris do
   end
 
   def update(model, msg) do
-    # TODO: key押してるときtickが進まない
+    # TODO: key押してるときtickが進まない問題
+    # IO.puts inspect(msg)
+    # model = if msg == :tick, do: tick(model), else: model
+    # model =
+    #   case msg do
+    #     :tick -> tick(model)
+    #     _ -> model
+    #   end
     case msg do
+      # :tick -> tick(model)
       {:event, %{key: key}} when key in @arrows -> %{model | current_block: move_block(key, model)}
       {:event, %{key: key}} when key == @space -> init(model)
       :tick -> tick(model)
@@ -56,6 +65,9 @@ defmodule Tetris do
 
   def subscribe(_model) do
     Subscription.interval(1000, :tick)
+    # Subscription.batch([
+    #   Subscription.interval(1000, :tick)
+    # ])
   end
 
   def render(model) do
@@ -255,4 +267,6 @@ defmodule Tetris do
   end
 end
 
-Ratatouille.run(Tetris, interval: 1000)
+# Ratatouille.run(Tetris, interval: 1000)
+# Ratatouille.run(Tetris, interval: 100)
+Ratatouille.run(Tetris)
