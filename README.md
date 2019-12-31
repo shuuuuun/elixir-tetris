@@ -8,7 +8,13 @@ This is study project.
 
 1. Clone this repository.
 
-2. Run this comamnd on your shell.
+2. Install dependencies.
+    ```shell
+    $ make get
+    # equivalent to `mix deps.get`.
+    ```
+
+3. Run.
     ```shell
     $ make run
     # equivalent to `MIX_ENV=prod mix run lib/tetris.exs`.
